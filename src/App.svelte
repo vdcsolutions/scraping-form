@@ -5,6 +5,7 @@
   const preloadedUrls = writable('');
   const preloadedPayloadItems = writable([]);
   const responseData = writable(null);
+  const awaitingResponse = writable(false); // Change initial value to false
 
   // Define the preloaded JSON data
   const preloadedData = {
@@ -34,16 +35,19 @@
 
   // Function to add a new payload input
   function addInput() {
-    $preloadedPayloadItems.update(items => [...items, { type: 'xpath', name: '', selector: '' }]);
+    preloadedPayloadItems.update(items => [...items, { type: 'xpath', name: '', selector: '' }]);
   }
 
   // Function to remove a payload input
   function removeInput(index) {
-    $preloadedPayloadItems.update(items => items.filter((item, i) => i !== index));
+    preloadedPayloadItems.update(items => items.filter((item, i) => i !== index));
   }
 
   // Function to handle the scrape button click
   async function scrape() {
+    // Set awaitingResponse to true
+    awaitingResponse.set(true);
+
     // Process the URLs
     const urlsList = $preloadedUrls.split('\n').map(url => url.trim()).filter(url => url !== '');
 
@@ -73,6 +77,9 @@
       responseData.set(responseDataValue);
     } catch (error) {
       console.error('Error:', error);
+    } finally {
+      // Set awaitingResponse to false
+      awaitingResponse.set(false);
     }
   }
 </script>
@@ -98,20 +105,42 @@
       <input bind:value={payloadItem.name} type="text" placeholder="Name">
       <input bind:value={payloadItem.selector} type="text" placeholder="Selector">
       <button on:click={() => removeInput(index)} class="remove-button">Remove</button>
-    </div>
-  {/each}
-
-  <button on:click={addInput} id="add-button">Add</button>
 </div>
-<button on:click={scrape} id="scrape-button">Scrape</button>
+{/each}
 
-<pre id="json-output">{#await $responseData}
-  <!-- Loading indicator -->
-  <p>Loading...</p>
-{:then response}
-  <!-- Display the response JSON -->
-  <code>{JSON.stringify(response, null, 2)}</code>
-{:catch error}
-  <!-- Error message -->
-  <p>Error: {error.message}</p>
-{/await}</pre>
+<button on:click={addInput} id="add-button">Add</button>
+</div>
+<button on:click={scrape} id="scrape-button" disabled={$awaitingResponse}>Scrape</button>
+
+{#if $responseData !== null}
+  <div id="table-output">
+    {#if $awaitingResponse}
+      <p>Loading...</p>
+    {:else}
+      {#each $responseData as data}
+        <table>
+          <tbody>
+            {#each Object.values(data.result)[0] as _, index}
+              {#if index === 0}
+                <tr>
+                  <th>URL</th>
+                  {#each Object.keys(data.result) as key}
+                    <th>{key}</th>
+                  {/each}
+                </tr>
+              {/if}
+              <tr>
+                {#if index === 0}
+                  <td rowspan={Object.values(data.result)[0].length}>{data.urls[0]}</td>
+                {/if}
+                {#each Object.values(data.result) as value}
+                  <td>{value[index]}</td>
+                {/each}
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      {/each}
+    {/if}
+  </div>
+{/if}
