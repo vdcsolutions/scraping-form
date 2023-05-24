@@ -1,0 +1,62 @@
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+.data-table th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.data-table td {
+  text-align: left;
+}
+
+.container {
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.form-row {
+  margin-bottom: 10px;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px; /* Adjust spacing between input containers */
+}
+
+.input-container label {
+  margin-right: 10px;
+}
+
+.input-container input[type="text"],
+.input-container select {
+  margin-right: 10px;
+}
+
+.remove-button {
+  color: red;
+  cursor: pointer;
+}
+
+#scrape-button {
+  margin-top: 20px;
+}
+
+#urls-input {
+  height: 100px;
+}
+
+#json-output {
+  white-space: pre;
+}
